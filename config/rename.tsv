@@ -1,0 +1,61 @@
+old	new
+cal_season	Season
+cal_season_1	Summer
+cal_season_2	Autumn
+cal_season_3	Winter
+cal_season_4	Spring
+cal_season_0.0	Summer
+cal_season_1.0	Autumn
+cal_season_2.0	Winter
+cal_season_3.0	Spring
+sam_0	SAM
+sam_3	SAM (L-3)
+sam_6	SAM (L-6)
+sam_9	SAM (L-9)
+sam_12	SAM (L-12)
+oni_detrended_0	ONI
+oni_detrended_3	ONI (L-3)
+oni_detrended_6	ONI (L-6)
+oni_detrended_9	ONI (L-9)
+oni_detrended_12	ONI (L-12)
+soi_0	SOI
+soi_3	SOI (L-3)
+soi_6	SOI (L-6)
+soi_9	SOI (L-9)
+soi_12	SOI (L-12)
+precip_30	PPT
+precip_91	PPT (T-3)
+precip_183	PPT (T-6)
+precip_273	PPT (T-9)
+precip_365	PPT (T-12)
+mean_day_tmin_30	TMIN
+mean_day_tmin_91	TMIN (A-3)
+mean_day_tmin_183	TMIN (A-6)
+mean_day_tmin_273	TMIN (A-9)
+mean_day_tmin_365	TMIN (A-12)
+mean_day_tmax_30	TMAX
+mean_day_tmax_91	TMAX (A-3)
+mean_day_tmax_183	TMAX (A-6)
+mean_day_tmax_273	TMAX (A-9)
+mean_day_tmax_365	TMAX (A-12)
+heat_day_30	HD
+heat_day_91	HD (T-3)
+heat_day_183	HD (T-6)
+heat_day_273	HD (T-9)
+heat_day_365	HD (T-12)
+fpar_mean_30	FPAR
+fpar_mean_91	FPAR (A-3)
+fpar_mean_183	FPAR (A-6)
+fpar_mean_273	FPAR (A-9)
+fpar_mean_365	FPAR (A-12)
+mean_mass_score	Mass Score
+prop_below_mass_score	Prop. Score
+mean_mass_bff_female	Mass (BFF-F)
+mean_mass_bff_male	Mass (BFF-M)
+mean_mass_ghff_female	Mass (GHFF-F)
+mean_mass_ghff_male	Mass (GHFF-M)
+rehab_num	RN
+lag_rehab_num_3	RN (L-3)
+lag_rehab_num_6	RN (L-6)
+total_rehab_num_3	RN (T-3)
+total_rehab_num_6	RN (T-6)

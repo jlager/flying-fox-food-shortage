@@ -1,0 +1,8 @@
+numpy==1.26.1
+pandas==2.1.4
+tqdm==4.65.0
+matplotlib==3.7.1
+seaborn==0.12.2
+lightgbm==3.3.5
+sklearn==1.2.2
+shap==0.42.1

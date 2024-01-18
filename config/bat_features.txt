@@ -1,0 +1,12 @@
+cal_season
+rehab_num
+lag_rehab_num_3
+lag_rehab_num_6
+total_rehab_num_3
+total_rehab_num_6
+mean_mass_score
+prop_below_mass_score
+mean_mass_bff_female
+mean_mass_bff_male
+mean_mass_ghff_female
+mean_mass_ghff_male
