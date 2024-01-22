@@ -1,5 +1,6 @@
 import numpy as np
 from sklearn import metrics
+from sklearn.tree import DecisionTreeClassifier, export_text
 
 def get_threshold(y_true, y_prob):
     precision, recall, thresholds = metrics.precision_recall_curve(
@@ -46,75 +47,133 @@ def get_acc(y_true, y_pred):
 def get_cm(y_true, y_pred):
     return metrics.confusion_matrix(y_true, y_pred, normalize='true')
 
-def print_metrics(y_true, y_prob, dates, train_idx, val_idx, test_idx):
+def print_metrics(
+    y_true, 
+    y_prob, 
+    dates, 
+    threshold=None,
+    train_idx=None, 
+    val_idx=None,
+    test_idx=None,
+):
+
+    # book keeping
+    train = train_idx is not None
+    val = val_idx is not None
+    test = test_idx is not None
 
     # get threshold
-    threshold = get_threshold(y_true[val_idx], y_prob[val_idx])
-    y_pred = (y_prob > threshold).astype(int)
-
+    if threshold is None and val:
+        threshold = get_threshold(y_true[val_idx], y_prob[val_idx])
+        y_pred = (y_prob > threshold).astype(int)
+    elif threshold is None and not val:
+        threshold = get_threshold(y_true[train_idx], y_prob[train_idx])
+        y_pred = (y_prob > threshold).astype(int)
+    else:
+        y_pred = (y_prob > threshold).astype(int)
     print('Optimal threshold: {:.4f}'.format(threshold))
     print()
     print(30*'-')
     print()
 
-    # book keeping
-    y_true_train = y_true[train_idx]
-    y_true_val = y_true[val_idx]
-    y_true_test = y_true[test_idx]
-    y_pred_train = y_pred[train_idx]
-    y_pred_val = y_pred[val_idx]
-    y_pred_test = y_pred[test_idx]
-    dates_train = dates[train_idx]
-    dates_val = dates[val_idx]
-    dates_test = dates[test_idx]
-
     # compute month-level metrics
-    acc_train = get_acc(y_true_train, y_pred_train)
-    acc_val = get_acc(y_true_val, y_pred_val)
-    acc_test = get_acc(y_true_test, y_pred_test)
-    cm_train = get_cm(y_true_train, y_pred_train)
-    cm_val = get_cm(y_true_val, y_pred_val)
-    cm_test = get_cm(y_true_test, y_pred_test)
-
     print('Month-level metrics:')
     print()
-    print('Train accuracy:      {:.4f}'.format(acc_train))
-    print('Validation accuracy: {:.4f}'.format(acc_val))
-    print('Test accuracy:       {:.4f}'.format(acc_test))
-    print('Train CM:')
-    print(np.round(cm_train, 4))
-    print('Validation CM:')
-    print(np.round(cm_val, 4))
-    print('Test CM:')
-    print(np.round(cm_test, 4))
-    print()
+    if train: 
+        y_true_train = y_true[train_idx]
+        y_pred_train = y_pred[train_idx]
+        dates_train = dates[train_idx]
+        acc_train = get_acc(y_true_train, y_pred_train)
+        cm_train = get_cm(y_true_train, y_pred_train)
+        print('Train accuracy:      {:.4f}'.format(acc_train))
+        print('Train CM:')
+        print(np.round(cm_train, 4))
+        print()
+    if val: 
+        y_true_val = y_true[val_idx]
+        y_pred_val = y_pred[val_idx]
+        dates_val = dates[val_idx]
+        acc_val = get_acc(y_true_val, y_pred_val)
+        cm_val = get_cm(y_true_val, y_pred_val)
+        print('Validation accuracy: {:.4f}'.format(acc_val))
+        print('Validation CM:')
+        print(np.round(cm_val, 4))
+        print()
+    if test: 
+        y_true_test = y_true[test_idx]
+        y_pred_test = y_pred[test_idx]
+        dates_test = dates[test_idx]
+        acc_test = get_acc(y_true_test, y_pred_test)
+        cm_test = get_cm(y_true_test, y_pred_test)
+        print('Test accuracy:       {:.4f}'.format(acc_test))
+        print('Test CM:')
+        print(np.round(cm_test, 4))
+        print()
     print(30*'-')
     print()
 
-    # convert to season-level
-    y_true_train_ssn = month_to_season(y_true_train, dates_train)
-    y_true_val_ssn = month_to_season(y_true_val, dates_val)
-    y_true_test_ssn = month_to_season(y_true_test, dates_test)
-    y_pred_train_ssn = month_to_season(y_pred_train, dates_train)
-    y_pred_val_ssn = month_to_season(y_pred_val, dates_val)
-    y_pred_test_ssn = month_to_season(y_pred_test, dates_test)
-
     # compute season-level metrics
-    acc_train_ssn = get_acc(y_true_train_ssn, y_pred_train_ssn)
-    acc_val_ssn = get_acc(y_true_val_ssn, y_pred_val_ssn)
-    acc_test_ssn = get_acc(y_true_test_ssn, y_pred_test_ssn)
-    cm_train_ssn = get_cm(y_true_train_ssn, y_pred_train_ssn)
-    cm_val_ssn = get_cm(y_true_val_ssn, y_pred_val_ssn)
-    cm_test_ssn = get_cm(y_true_test_ssn, y_pred_test_ssn)
-    
     print('Season-level metrics:')
-    print('Train accuracy:      {:.4f}'.format(acc_train_ssn))
-    print('Validation accuracy: {:.4f}'.format(acc_val_ssn))
-    print('Test accuracy:       {:.4f}'.format(acc_test_ssn))
-    print('Train CM:')
-    print(np.round(cm_train_ssn, 4))
-    print('Validation CM:')
-    print(np.round(cm_val_ssn, 4))
-    print('Test CM:')
-    print(np.round(cm_test_ssn, 4))
+    print()
+    if train:
+        y_true_train_ssn = month_to_season(y_true_train, dates_train)
+        y_pred_train_ssn = month_to_season(y_pred_train, dates_train)
+        acc_train_ssn = get_acc(y_true_train_ssn, y_pred_train_ssn)
+        cm_train_ssn = get_cm(y_true_train_ssn, y_pred_train_ssn)
+        print('Train accuracy:      {:.4f}'.format(acc_train_ssn))
+        print('Train CM:')
+        print(np.round(cm_train_ssn, 4))
+        print()
+    if val:
+        y_true_val_ssn = month_to_season(y_true_val, dates_val)
+        y_pred_val_ssn = month_to_season(y_pred_val, dates_val)
+        acc_val_ssn = get_acc(y_true_val_ssn, y_pred_val_ssn)
+        cm_val_ssn = get_cm(y_true_val_ssn, y_pred_val_ssn)
+        print('Validation accuracy: {:.4f}'.format(acc_val_ssn))
+        print('Validation CM:')
+        print(np.round(cm_val_ssn, 4))
+        print()
+    if test:
+        y_true_test_ssn = month_to_season(y_true_test, dates_test)
+        y_pred_test_ssn = month_to_season(y_pred_test, dates_test)
+        acc_test_ssn = get_acc(y_true_test_ssn, y_pred_test_ssn)
+        cm_test_ssn = get_cm(y_true_test_ssn, y_pred_test_ssn)
+        print('Test accuracy:       {:.4f}'.format(acc_test_ssn))
+        print('Test CM:')
+        print(np.round(cm_test_ssn, 4))
 
+def optimal_shap_splits(
+    x,
+    y,
+    feature_names,
+    weights=None,
+    verbose=False,
+):
+
+    # train decision tree
+    n_features = x.shape[1]
+    dt = DecisionTreeClassifier(max_depth=n_features)
+    if weights is not None:
+        dt.fit(x, y, sample_weight=weights)
+    else:
+        dt.fit(x, y)
+    dt_txt = export_text(dt, feature_names=feature_names)
+    if verbose: 
+        print(dt_txt)
+
+    # parse decision tree
+    dt_txt = dt_txt.split('\n')
+    dt_txt = [t for t in dt_txt if ' <= ' in t]
+    names, splits = [], []
+    for i in range(len(dt_txt)):
+        name, value = dt_txt[i].split(' <= ')
+        name = name.split('|--- ')[-1]
+        value = float(value.strip())
+        names.append(name)
+        splits.append(value)
+
+    # aggregate splits
+    names, splits = np.array(names), np.array(splits)
+    splits = np.array([splits[names == n].max() for n in feature_names])
+
+    return names, splits
