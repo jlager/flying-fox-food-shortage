@@ -6,7 +6,7 @@
 
 **Description**
 
-Food availability determines where animals use space across a landscape and therefore affects the risk of encounters that lead to zoonotic spillover. This relationship is evident in Australian flying foxes (Pteropus spp; fruit bats), where acute food shortages precede clusters of Hendra virus spillovers. Using explainable artificial intelligence, we predicted months of food shortages from climatological and ecological covariates (1996-2022) in eastern Australia. Overall accuracy in predicting months of low food availability on a test set from 2018 up to 2022 reached 93.33% and 92.59% based on climatological and bat-level features, respectively. Seasonality and Oceanic El Niño Index were the most important environmental features, while the number of bats in rescue centers and their body weights were the most important bat-level features. These models support predictive signals up to nine months in advance, facilitating action to mitigate spillover risk.
+Food availability determines where and how animals use space across a landscape, and therefore affects the risk of encounters leading to zoonotic spillover. This relationship is evident in Australian flying foxes (Pteropus spp; fruit bats), where acute food shortages precede clusters of Hendra virus spillovers. Using machine learning, we predicted months of food shortages from climatological and ecological covariates (1996-2022) in subtropical Australia. Overall accuracy in predicting months of low food availability on a test set from 2018 up to 2022 reached 93.33% and 92.59% based on climatological and bat-level features, respectively. Seasonality and Oceanic El Niño Index were the most important environmental features, while the number of bats in rescue centers and their body weights were the most important bat-level features. These models support predictive signals up to nine months in advance, facilitating action to mitigate spillover risk.
 
 **Directories:**
 
@@ -22,6 +22,7 @@ Food availability determines where animals use space across a landscape and ther
     │   ├── Metrics.py
     │   └── Plots.py
     ├── FlyingFoxFoodShortage.ipynb
+    ├── FlyingFoxGLM.ipynb
     └── requirements.txt
 
 **Config:**
@@ -42,7 +43,7 @@ The `scripts` folder includes utility scripts implemented in Python that assist 
 
 **Notebooks:**
 
-The `FlyingFoxFoodShortage.ipynb` notebook is used for data loading and pre-processing, model training, model inference, model evaluation, and figure generation.
+The `FlyingFoxFoodShortage.ipynb` and `FlyingFoxGLM.ipynb` notebooks are used for data loading and pre-processing, model training, model inference, model evaluation, and figure generation using the GBDT and GLM models, respectively.
 
 **Citation:**
 
