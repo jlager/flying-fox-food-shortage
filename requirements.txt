@@ -4,5 +4,6 @@ tqdm==4.65.0
 matplotlib==3.7.1
 seaborn==0.12.2
 lightgbm==3.3.5
-sklearn==1.2.2
+scikit-learn==1.2.2
 shap==0.42.1
+statsmodels==0.14.4
