@@ -2,8 +2,16 @@ import numpy as np
 from sklearn import metrics
 from sklearn.tree import DecisionTreeClassifier, export_text
 
-def get_threshold(y_true, y_prob):
-    precision, recall, thresholds = metrics.precision_recall_curve(y_true, y_prob)
+def precision_recall(y_true, y_prob, weight=None):
+    precision, recall, thresholds = metrics.precision_recall_curve(
+        y_true, y_prob, sample_weight=weight)
+    return precision, recall, thresholds
+
+def get_threshold(y_true, y_prob, weight=None):
+    if y_true.sum() == 0:
+        return np.nan
+    precision, recall, thresholds = precision_recall(
+        y_true, y_prob, weight=weight)
     f1 = 2 * (precision * recall) / (precision + recall).clip(1e-8)
     threshold = thresholds[np.argmax(f1)]
     return threshold
@@ -93,6 +101,8 @@ def get_event_metrics(y_true, y_pred, dates):
     true_blocks = get_blocks(y_true, dates)
     pred_blocks = get_blocks(y_pred, dates)
 
+    print(f'True blocks: {len(true_blocks)}, Predicted blocks: {len(pred_blocks)}')
+    
     # handle trivial cases
     if len(true_blocks) == 0 and len(pred_blocks) == 0:
         return {
@@ -186,6 +196,7 @@ def print_metrics(
     train_idx=None,
     val_idx=None,
     test_idx=None,
+    decimal=4,
 ):
     # book keeping
     train = train_idx is not None
@@ -195,15 +206,16 @@ def print_metrics(
     # get threshold
     if threshold is None and val:
         threshold = get_threshold(y_true[val_idx], y_prob[val_idx])
-        y_pred = (y_prob > threshold).astype(int)
+        y_pred = (y_prob >= threshold).astype(int)
     elif threshold is None and not val and train:
         threshold = get_threshold(y_true[train_idx], y_prob[train_idx])
-        y_pred = (y_prob > threshold).astype(int)
+        y_pred = (y_prob >= threshold).astype(int)
     else:
         # user-specified threshold
-        y_pred = (y_prob > threshold).astype(int)
+        y_pred = (y_prob >= threshold).astype(int)
 
-    print('Optimal threshold: {:.4f}'.format(threshold))
+    print('Optimal threshold: {}'.format(threshold))
+    print('Rounded threshold: {}'.format(np.round(threshold, decimal)))
     print()
     print('-' * 30)
     print()
@@ -219,33 +231,33 @@ def print_metrics(
         y_true_train = y_true[train_idx]
         y_pred_train = y_pred[train_idx]
         dates_train = dates[train_idx]
-        acc_train = get_acc(y_true_train, y_pred_train)
-        cm_train = get_cm(y_true_train, y_pred_train)
-        print('Train accuracy:      {:.4f}'.format(acc_train))
+        acc_train = np.round(get_acc(y_true_train, y_pred_train), decimal)
+        cm_train = np.round(get_cm(y_true_train, y_pred_train), decimal)
+        print('Train accuracy:      {}'.format(acc_train))
         print('Train CM:')
-        print(np.round(cm_train, 4))
+        print(cm_train)
         print()
 
     if val:
         y_true_val = y_true[val_idx]
         y_pred_val = y_pred[val_idx]
         dates_val = dates[val_idx]
-        acc_val = get_acc(y_true_val, y_pred_val)
-        cm_val = get_cm(y_true_val, y_pred_val)
-        print('Validation accuracy: {:.4f}'.format(acc_val))
+        acc_val = np.round(get_acc(y_true_val, y_pred_val), decimal)
+        cm_val = np.round(get_cm(y_true_val, y_pred_val), decimal)
+        print('Validation accuracy: {}'.format(acc_val))
         print('Validation CM:')
-        print(np.round(cm_val, 4))
+        print(cm_val)
         print()
 
     if test:
         y_true_test = y_true[test_idx]
         y_pred_test = y_pred[test_idx]
         dates_test = dates[test_idx]
-        acc_test = get_acc(y_true_test, y_pred_test)
-        cm_test = get_cm(y_true_test, y_pred_test)
-        print('Test accuracy:       {:.4f}'.format(acc_test))
+        acc_test = np.round(get_acc(y_true_test, y_pred_test), decimal)
+        cm_test = np.round(get_cm(y_true_test, y_pred_test), decimal)
+        print('Test accuracy:       {}'.format(acc_test))
         print('Test CM:')
-        print(np.round(cm_test, 4))
+        print(cm_test)
         print()
 
     print('-' * 30)
@@ -261,31 +273,31 @@ def print_metrics(
     if train:
         y_true_train_ssn = month_to_season(y_true_train, dates_train)
         y_pred_train_ssn = month_to_season(y_pred_train, dates_train)
-        acc_train_ssn = get_acc(y_true_train_ssn, y_pred_train_ssn)
-        cm_train_ssn = get_cm(y_true_train_ssn, y_pred_train_ssn)
-        print('Train accuracy:      {:.4f}'.format(acc_train_ssn))
+        acc_train_ssn = np.round(get_acc(y_true_train_ssn, y_pred_train_ssn), decimal)
+        cm_train_ssn = np.round(get_cm(y_true_train_ssn, y_pred_train_ssn), decimal)
+        print('Train accuracy:      {}'.format(acc_train_ssn))
         print('Train CM:')
-        print(np.round(cm_train_ssn, 4))
+        print(cm_train_ssn)
         print()
 
     if val:
         y_true_val_ssn = month_to_season(y_true_val, dates_val)
         y_pred_val_ssn = month_to_season(y_pred_val, dates_val)
-        acc_val_ssn = get_acc(y_true_val_ssn, y_pred_val_ssn)
-        cm_val_ssn = get_cm(y_true_val_ssn, y_pred_val_ssn)
-        print('Validation accuracy: {:.4f}'.format(acc_val_ssn))
+        acc_val_ssn = np.round(get_acc(y_true_val_ssn, y_pred_val_ssn), decimal)
+        cm_val_ssn = np.round(get_cm(y_true_val_ssn, y_pred_val_ssn), decimal)
+        print('Validation accuracy: {}'.format(acc_val_ssn))
         print('Validation CM:')
-        print(np.round(cm_val_ssn, 4))
+        print(cm_val_ssn)
         print()
 
     if test:
         y_true_test_ssn = month_to_season(y_true_test, dates_test)
         y_pred_test_ssn = month_to_season(y_pred_test, dates_test)
-        acc_test_ssn = get_acc(y_true_test_ssn, y_pred_test_ssn)
-        cm_test_ssn = get_cm(y_true_test_ssn, y_pred_test_ssn)
-        print('Test accuracy:       {:.4f}'.format(acc_test_ssn))
+        acc_test_ssn = np.round(get_acc(y_true_test_ssn, y_pred_test_ssn), decimal)
+        cm_test_ssn = np.round(get_cm(y_true_test_ssn, y_pred_test_ssn), decimal)
+        print('Test accuracy:       {}'.format(acc_test_ssn))
         print('Test CM:')
-        print(np.round(cm_test_ssn, 4))
+        print(cm_test_ssn)
         print()
 
     print('-' * 30)
@@ -300,30 +312,112 @@ def print_metrics(
 
     if train:
         train_event_stats = get_event_metrics(y_true_train, y_pred_train, dates_train)
-        print('Train event-based precision:  {:.4f}'.format(train_event_stats['event_precision']))
-        print('Train event-based recall:     {:.4f}'.format(train_event_stats['event_recall']))
-        print('Train mean start error:       {:.4f}'.format(train_event_stats['mean_start_error']))
-        print('Train mean end error:         {:.4f}'.format(train_event_stats['mean_end_error']))
-        print('Train mean duration error:    {:.4f}'.format(train_event_stats['mean_duration_error']))
+        print('Train event-based precision:  {}'.format(
+            np.round(train_event_stats['event_precision'], decimal)))
+        print('Train event-based recall:     {}'.format(
+            np.round(train_event_stats['event_recall'], decimal)))
+        print('Train mean start error:       {}'.format(
+            np.round(train_event_stats['mean_start_error'], decimal)))
+        print('Train mean end error:         {}'.format(
+            np.round(train_event_stats['mean_end_error'], decimal)))
+        print('Train mean duration error:    {}'.format(
+            np.round(train_event_stats['mean_duration_error'], decimal)))
         print()
 
     if val:
         val_event_stats = get_event_metrics(y_true_val, y_pred_val, dates_val)
-        print('Validation event-based precision:  {:.4f}'.format(val_event_stats['event_precision']))
-        print('Validation event-based recall:     {:.4f}'.format(val_event_stats['event_recall']))
-        print('Validation mean start error:       {:.4f}'.format(val_event_stats['mean_start_error']))
-        print('Validation mean end error:         {:.4f}'.format(val_event_stats['mean_end_error']))
-        print('Validation mean duration error:    {:.4f}'.format(val_event_stats['mean_duration_error']))
+        print('Validation event-based precision:  {}'.format(
+            np.round(val_event_stats['event_precision'], decimal)))
+        print('Validation event-based recall:     {}'.format(
+            np.round(val_event_stats['event_recall'], decimal)))
+        print('Validation mean start error:       {}'.format(
+            np.round(val_event_stats['mean_start_error'], decimal)))
+        print('Validation mean end error:         {}'.format(
+            np.round(val_event_stats['mean_end_error'], decimal)))
+        print('Validation mean duration error:    {}'.format(
+            np.round(val_event_stats['mean_duration_error'], decimal)))
         print()
 
     if test:
         test_event_stats = get_event_metrics(y_true_test, y_pred_test, dates_test)
-        print('Test event-based precision:        {:.4f}'.format(test_event_stats['event_precision']))
-        print('Test event-based recall:           {:.4f}'.format(test_event_stats['event_recall']))
-        print('Test mean start error:             {:.4f}'.format(test_event_stats['mean_start_error']))
-        print('Test mean end error:               {:.4f}'.format(test_event_stats['mean_end_error']))
-        print('Test mean duration error:          {:.4f}'.format(test_event_stats['mean_duration_error']))
+        print('Test event-based precision:        {}'.format(
+            np.round(test_event_stats['event_precision'], decimal)))
+        print('Test event-based recall:           {}'.format(
+            np.round(test_event_stats['event_recall'], decimal)))
+        print('Test mean start error:             {}'.format(
+            np.round(test_event_stats['mean_start_error'], decimal)))
+        print('Test mean end error:               {}'.format(
+            np.round(test_event_stats['mean_end_error'], decimal)))
+        print('Test mean duration error:          {}'.format(
+            np.round(test_event_stats['mean_duration_error'], decimal)))
         print()
+    
+
+def _split_idx(train_idx, val_idx, test_idx, split):
+    return {"train": train_idx, "val": val_idx, "test": test_idx}[split]
+
+def _summarize_block(y_true, y_pred, dates, decimal=1, pct=True):
+    scale = 100.0 if pct else 1.0
+    # month level
+    acc_m = get_acc(y_true, y_pred) * scale
+    cm_m  = get_cm(y_true, y_pred)      # rows sum to 1
+    tpr_m = cm_m[1, 1] * scale          # sensitivity
+    tnr_m = cm_m[0, 0] * scale          # specificity
+    # season level
+    y_true_s = month_to_season(y_true, dates)
+    y_pred_s = month_to_season(y_pred, dates)
+    acc_s = get_acc(y_true_s, y_pred_s) * scale
+    cm_s  = get_cm(y_true_s, y_pred_s)
+    tpr_s = cm_s[1, 1] * scale
+    tnr_s = cm_s[0, 0] * scale
+    # event level
+    ev = get_event_metrics(y_true, y_pred, dates)
+    P  = ev["event_precision"] * scale if ev["event_precision"] is not None else np.nan
+    R  = ev["event_recall"]    * scale if ev["event_recall"]    is not None else np.nan
+    SE = ev["mean_start_error"]
+    EE = ev["mean_end_error"]
+    DE = ev["mean_duration_error"]
+    vals = dict(
+        MA=acc_m, MTPR=tpr_m, MTNR=tnr_m,
+        SA=acc_s, STPR=tpr_s, STNR=tnr_s,
+        P=P, R=R, SE=SE, EE=EE, DE=DE
+    )
+    # round
+    for k, v in vals.items():
+        if v is None: continue
+        if np.isnan(v): continue
+        vals[k] = np.round(v, decimal)
+    return vals
+
+def generate_table(y_true, y_prob, dates,
+                  split="val",
+                  train_idx=None, val_idx=None, test_idx=None,
+                  threshold=None, decimal=1, pct=True,
+                  sep="\t", return_string=True):
+    """Outputs metrics in this column order:
+       MA, MTPR, MTNR, SA, STPR, STNR, P, R, SE, EE, DE
+    """
+    # choose split indices
+    idx = _split_idx(train_idx, val_idx, test_idx, split)
+    assert idx is not None, f"{split} indices are required"
+    # choose threshold
+    if threshold is None:
+        ref_idx = val_idx if val_idx is not None else train_idx
+        assert ref_idx is not None, "need train_idx or val_idx to tune threshold"
+        threshold = get_threshold(y_true[ref_idx], y_prob[ref_idx])
+    y_pred = (y_prob >= threshold).astype(int)
+
+    # slice this split
+    yt, yp, dt = y_true[idx], y_pred[idx], dates[idx]
+    vals = _summarize_block(yt, yp, dt, decimal=decimal, pct=pct)
+
+    if return_string:
+        order = ["MA","MTPR","MTNR","SA","STPR","STNR","P","R","SE","EE","DE"]
+        s = sep.join("" if (k in vals and (vals[k] is None or np.isnan(vals[k])))
+                     else str(vals[k]) for k in order)
+        print(s)  # one clean line for copy/paste
+        return vals, s
+    return vals
 
 
 def optimal_shap_splits(
