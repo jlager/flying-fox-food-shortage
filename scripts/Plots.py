@@ -11,6 +11,11 @@ color_pal = sns.color_palette()
 plt.style.use('fivethirtyeight')
 # sns.set(rc={'axes.facecolor':'white', 'figure.facecolor':'white'})
 
+# set figure background color
+# plt.style.use('fivethirtyeight')
+# plt.rcParams['figure.facecolor'] = 'white'
+# plt.rcParams['axes.facecolor'] = 'white'
+
 def cv_splits(
     years, 
     cv_splits,
@@ -222,7 +227,7 @@ def predictions_subplots(
     y_probs,
     cv_splits,
     dates,
-    threshold,
+    thresholds,
     dataset='env',
     save_name=None,
 ):
@@ -279,7 +284,7 @@ def predictions_subplots(
                 '-', c='red', linewidth=2, markersize=3, label='Val')
 
         # horizontal threshold line
-        ax.hlines(threshold, -0.5, len(y_true) + 0.5, 
+        ax.hlines(thresholds[i], -0.5, len(y_true) + 0.5, 
                   color='k', linestyles='dashed', linewidth=2, label='Threshold')
 
         # draw year separators
@@ -291,7 +296,7 @@ def predictions_subplots(
 
         # decorate y-axis
         ax.set_ylabel(f'Fold {i+1}\nProbability', fontsize=18)
-        ax.set_ylim(-0.03, 1.01)
+        ax.set_ylim(-0.03, 1.03)
         ax.set_xlim(x_min_plot, x_max_plot)
 
         # legend
@@ -324,7 +329,7 @@ def predictions_subplots(
     ax.plot(v_idx, y_prob_test,
             '-', c='purple', linewidth=2, markersize=3, label='Test')
 
-    ax.hlines(threshold, -0.5, len(y_true) + 0.5, 
+    ax.hlines(thresholds[-1], -0.5, len(y_true) + 0.5, 
                 color='k', linestyles='dashed', linewidth=2, label='Threshold')
 
     draw_year_separators(ax, fold_max)
@@ -336,7 +341,7 @@ def predictions_subplots(
 
     ax.set_ylabel(f'Test\nProbability', fontsize=18)
     # ax.xaxis.set_label_coords(0.5, -0.1)
-    ax.set_ylim(-0.03, 1.01)
+    ax.set_ylim(-0.03, 1.03)
 
     if dataset == 'env':
         ax.legend(loc='upper left', framealpha=1)
