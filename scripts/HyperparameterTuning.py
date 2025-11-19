@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 from tqdm import tqdm
 from typing import Tuple
+from sklearn.preprocessing import StandardScaler
 
 def hyperparameter_tuning(
     model_class,
@@ -15,6 +16,7 @@ def hyperparameter_tuning(
     val_indices: list,
     weights: list = None,
     verbose: bool = True,
+    normalize: bool = False,
 ) -> Tuple[dict, dict, list, list]:
 
     '''
@@ -69,6 +71,8 @@ def hyperparameter_tuning(
         hyperparameter combination.
     verbose : bool, optional
         Whether to print results and use status bar during tuning.
+    normalize : bool, optional
+        Whether to center and scale the input features.
 
     Returns
     -------
@@ -118,17 +122,26 @@ def hyperparameter_tuning(
             # initialize model with hyperparameter combination
             model = model_class(**model_hyper_i, **model_fixed)
 
+            # normalize input features
+            if normalize:
+                scaler = StandardScaler().fit(x[t_idx])
+            else:
+                class IdentifyScaler:
+                    def transform(self, X):
+                        return X
+                scaler = IdentifyScaler()
+
             # fit model on train/val set
             model.fit(
-                X=x[t_idx],
+                X=scaler.transform(x[t_idx]),
                 y=y[t_idx],
-                eval_set=(x[v_idx], y[v_idx]),
+                eval_set=(scaler.transform(x[v_idx]), y[v_idx]),
                 **train_hyper_i,
                 **train_fixed,
             )
 
             # evaluate model on val set
-            score = model.evaluate(x[v_idx], y[v_idx])
+            score = model.evaluate(scaler.transform(x[v_idx]), y[v_idx])
 
             # store model and score for train/val set
             models.append(model)
@@ -171,5 +184,7 @@ def hyperparameter_tuning(
         print()
         print('eval score:')
         print(f'score: {eval_matrix[indices]}')
-    
+        print(f'best index: {argmin}')
+        print()
+
     return best_model_params, best_train_params, model_list, score_list
