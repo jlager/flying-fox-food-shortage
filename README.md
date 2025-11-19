@@ -15,6 +15,9 @@ Food availability determines where and how animals use space across a landscape,
     │   ├── bat_features.txt
     │   ├── env_features.txt
     │   └── rename.txt
+    ├── data
+    │   ├── bat-level_data.csv
+    │   └── environmental_data.csv
     ├── figures
     │   └── *.pdf
     ├── scripts
@@ -27,7 +30,11 @@ Food availability determines where and how animals use space across a landscape,
 
 **Config:**
 
-The `config` folder includes names of bat-level and environmental input features for the GBDT model as well as a renaming dictionary for plotting purposes.
+The `config` folder includes names of bat-level and environmental input features for the GBDT and GLM as well as a renaming dictionary for plotting purposes.
+
+**Data:**
+
+The `data` folder includes the bat-level and environmental input and output data for the GBDT and GLM training and evaluation.
 
 **Figures:**
 
@@ -43,7 +50,7 @@ The `scripts` folder includes utility scripts implemented in Python that assist 
 
 **Notebooks:**
 
-The `FlyingFoxFoodShortage.ipynb` and `FlyingFoxGLM.ipynb` notebooks are used for data loading and pre-processing, model training, model inference, model evaluation, and figure generation using the GBDT and GLM models, respectively.
+The `FlyingFoxFoodShortage.ipynb` and `FlyingFoxGLM.ipynb` notebooks are used for data loading and pre-processing, model training, model inference, model evaluation, and figure generation using the GBDT and GLM, respectively.
 
 **Citation:**
 
